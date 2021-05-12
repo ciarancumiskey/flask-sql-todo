@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 #Create a Flask app named after this file, then set up the DB connection
@@ -21,3 +21,13 @@ db.create_all()
 @app.route('/')
 def index():
     return render_template('index.html', data=Todo.query.all())
+
+@app.route('/create-todo', methods=['POST'])
+def create_todo():
+    description = request.form.get('description', '')
+    todo_complete = request.form.get('complete', False)
+    new_todo = Todo(description=description, complete=bool(todo_complete))
+    db.session.add(new_todo)
+    db.session.commit()
+    return redirect(url_for('index'))
+    #return render_template('add_todo.html')

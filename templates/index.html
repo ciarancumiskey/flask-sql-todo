@@ -3,6 +3,21 @@
         <title>Todo App</title> 
     </head>
     <body>
+        <form action="/create-todo" method="post">
+            <div>
+                <label for="description">Description</label>
+                <input type="text" name="description">
+                <!--TODO: Add input fields-->
+            </div>
+            <div>
+                <label for="complete">Complete</label>
+                <input type="checkbox" name="complete">
+                <!--TODO: Add input fields-->
+            </div>
+            <div>
+                <input type="submit" id="submit" value="Create new Todo" />
+            </div>
+        </form>
         <ul>
             <!--Load the data input from render_template-->
             {% for d in data %}
