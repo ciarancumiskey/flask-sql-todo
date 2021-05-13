@@ -85,7 +85,7 @@
                     if (jsonResponse.complete){
                         newLiItem.className = "task-complete";
                     }
-                    newLiItem.className += " priority-" + jsonResponse.priorityLevel;
+                    newLiItem.className += " priority-" + jsonResponse['priority_level'];
                     console.log(newLiItem.className);
                     document.getElementById("list-todos").appendChild(newLiItem);
                     document.getElementById("error").className = "hidden";
