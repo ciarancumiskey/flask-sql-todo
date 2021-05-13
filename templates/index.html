@@ -80,18 +80,19 @@
                 })
                 .then(function(jsonResponse){
                     console.log(jsonResponse);
-                    const newLiItem = document.createElement('LI');
+                    const newLiItem = document.createElement("li");
                     newLiItem.innerHTML = jsonResponse['description'];
                     if (jsonResponse.complete){
                         newLiItem.className = "task-complete";
                     }
-                    const liPriorityClass = "priority-" + jsonResponse.priorityLevel;
-                    newLiItem.className += jsonResponse.priorityLevel;
+                    newLiItem.className += " priority-" + jsonResponse.priorityLevel;
+                    console.log(newLiItem.className);
                     document.getElementById("list-todos").appendChild(newLiItem);
                     document.getElementById("error").className = "hidden";
                 })
-                .catch(function(){
+                .catch(function(error){
                     document.getElementById("error").className = "";
+                    console.log(error);
                 })
             }
         </script>
