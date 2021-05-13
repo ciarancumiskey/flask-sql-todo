@@ -2,6 +2,9 @@
     <head>
         <title>Todo App</title>
         <style>
+            #error {
+                color: red;
+            }
             .hidden {
                 display: none;
             }
@@ -58,7 +61,6 @@
                     const newLiItem = document.createElement('LI');
                     newLiItem.innerHTML = jsonResponse['description'];
                     if (jsonResponse.complete){
-                        console.log("Task is already complete");
                         newLiItem.className = "task-complete";
                     }
                     document.getElementById("list-todos").appendChild(newLiItem);
