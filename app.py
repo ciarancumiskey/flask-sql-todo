@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 #Create a Flask app named after this file, then set up the DB connection
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://todo:$PASSWORDGOESHERE@localhost:5432/todoapp'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://todo:todo@localhost:5432/todoapp'
 db = SQLAlchemy(app)
 
 #Create the model, then instantiate it
@@ -22,12 +22,14 @@ db.create_all()
 def index():
     return render_template('index.html', data=Todo.query.all())
 
-@app.route('/create-todo', methods=['POST'])
+@app.route('/todos/create', methods=['POST'])
 def create_todo():
+    #Get the data from the user's POST request
     description = request.form.get('description', '')
     todo_complete = request.form.get('complete', False)
+    #Use that POSTed data to create a Todo object
     new_todo = Todo(description=description, complete=bool(todo_complete))
     db.session.add(new_todo)
     db.session.commit()
+    #Return the user to the index page
     return redirect(url_for('index'))
-    #return render_template('add_todo.html')

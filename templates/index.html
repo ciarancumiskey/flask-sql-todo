@@ -3,7 +3,7 @@
         <title>Todo App</title> 
     </head>
     <body>
-        <form action="/create-todo" method="post">
+        <form action="/todos/create" method="post">
             <div>
                 <label for="description">Description</label>
                 <input type="text" name="description">
@@ -21,7 +21,10 @@
         <ul>
             <!--Load the data input from render_template-->
             {% for d in data %}
-            <li>{{ d.description }}</li>
+            <!--The double curly brackets are Jinja print statements-->
+            <li{% if d.complete %} style="text-decoration: line-through"{% endif %}>
+                {{ d.description }}
+            </li>
             {% endfor %}
         </ul>
     </body>
