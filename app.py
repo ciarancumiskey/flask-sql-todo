@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 #Create a Flask app named after this file, then set up the DB connection
@@ -25,11 +25,14 @@ def index():
 @app.route('/todos/create', methods=['POST'])
 def create_todo():
     #Get the data from the user's POST request
-    description = request.form.get('description', '')
-    todo_complete = request.form.get('complete', False)
+    description = request.get_json()['description']
+    todo_complete = request.get_json()['complete']
     #Use that POSTed data to create a Todo object
     new_todo = Todo(description=description, complete=bool(todo_complete))
     db.session.add(new_todo)
     db.session.commit()
-    #Return the user to the index page
-    return redirect(url_for('index'))
+    #Instead of returning the user to the index page, return the JSON data to the client
+    return jsonify({
+        'description': new_todo.description,
+        'complete': new_todo.complete
+    })

@@ -1,31 +1,73 @@
 <html>
     <head>
-        <title>Todo App</title> 
+        <title>Todo App</title>
+        <style>
+            .hidden {
+                display: none;
+            }
+            .task-complete {
+                text-decoration: line-through;
+            }
+        </style>
     </head>
     <body>
-        <form action="/todos/create" method="post">
+        <form id="form-create-todo">
             <div>
                 <label for="description">Description</label>
-                <input type="text" name="description">
+                <input type="text" name="description" id="input-description">
                 <!--TODO: Add input fields-->
             </div>
             <div>
-                <label for="complete">Complete</label>
-                <input type="checkbox" name="complete">
+                <label for="complete">Task complete</label>
+                <input type="checkbox" name="complete" id="checkbox-complete">
                 <!--TODO: Add input fields-->
             </div>
             <div>
                 <input type="submit" id="submit" value="Create new Todo" />
             </div>
         </form>
-        <ul>
+        <div id="error" class="hidden">An error has occurred.</div>
+        <ul id="list-todos">
             <!--Load the data input from render_template-->
             {% for d in data %}
             <!--The double curly brackets are Jinja print statements-->
-            <li{% if d.complete %} style="text-decoration: line-through"{% endif %}>
+            <li{% if d.complete %} class="task-complete"{% endif %}>
                 {{ d.description }}
             </li>
             {% endfor %}
         </ul>
+        <script>
+            document.getElementById("form-create-todo").onsubmit = function(e){
+                //Prevent the page from refreshing
+                e.preventDefault();
+                fetch("/todos/create", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        "description": document.getElementById("input-description").value,
+                        "complete": document.getElementById("checkbox-complete").checked
+                    }),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(function(response){
+                    return response.json();
+                })
+                .then(function(jsonResponse){
+                    console.log(jsonResponse);
+                    const newLiItem = document.createElement('LI');
+                    newLiItem.innerHTML = jsonResponse['description'];
+                    if (jsonResponse.complete){
+                        console.log("Task is already complete");
+                        newLiItem.className = "task-complete";
+                    }
+                    document.getElementById("list-todos").appendChild(newLiItem);
+                    document.getElementById("error").className = "hidden";
+                })
+                .catch(function(){
+                    document.getElementById("error").className = "";
+                })
+            }
+        </script>
     </body>
 </html>
