@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
+import sys
 
 #Create a Flask app named after this file, then set up the DB connection
 app = Flask(__name__)
@@ -24,15 +25,28 @@ def index():
 
 @app.route('/todos/create', methods=['POST'])
 def create_todo():
-    #Get the data from the user's POST request
-    description = request.get_json()['description']
-    todo_complete = request.get_json()['complete']
-    #Use that POSTed data to create a Todo object
-    new_todo = Todo(description=description, complete=bool(todo_complete))
-    db.session.add(new_todo)
-    db.session.commit()
-    #Instead of returning the user to the index page, return the JSON data to the client
-    return jsonify({
-        'description': new_todo.description,
-        'complete': new_todo.complete
-    })
+    error = False
+    todo_body = {}
+    try:
+        #Get the data from the user's POST request
+        description = request.get_json()['description']
+        todo_complete = request.get_json()['complete']
+        #Use that POSTed data to create a Todo object
+        new_todo = Todo(description=description, complete=bool(todo_complete))
+        db.session.add(new_todo)
+        db.session.commit()
+        todo_body['description'] = new_todo.description
+        todo_body['complete'] = new_todo.complete
+    except:
+        error = True
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+    if error:
+        abort(400)
+    if not error:
+        #Instead of returning the user to the index page, return the JSON data to the client
+        return jsonify(todo_body)
+    
+    
