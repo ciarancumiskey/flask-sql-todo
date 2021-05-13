@@ -11,6 +11,20 @@
             .task-complete {
                 text-decoration: line-through;
             }
+            .priority-urgent {
+                background-color: red;
+                color: white;
+            }
+            .priority-high {
+                background-color: orange;
+            }
+            .priority-med {
+                background-color: yellow;
+            }
+            .priority-low {
+                background-color: green;
+                color: white;
+            }
         </style>
     </head>
     <body>
@@ -18,12 +32,19 @@
             <div>
                 <label for="description">Description</label>
                 <input type="text" name="description" id="input-description">
-                <!--TODO: Add input fields-->
+            </div>
+            <div>
+                <label for="priority-level">Priority level</label>
+                <select name="priority-level" id="select-priority-level">
+                    <option value="urgent">URGENT</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
             </div>
             <div>
                 <label for="complete">Task complete</label>
                 <input type="checkbox" name="complete" id="checkbox-complete">
-                <!--TODO: Add input fields-->
             </div>
             <div>
                 <input type="submit" id="submit" value="Create new Todo" />
@@ -34,7 +55,7 @@
             <!--Load the data input from render_template-->
             {% for d in data %}
             <!--The double curly brackets are Jinja print statements-->
-            <li{% if d.complete %} class="task-complete"{% endif %}>
+            <li class="priority-{{ d.priority_level }}{% if d.complete %} task-complete{% endif %}">
                 {{ d.description }}
             </li>
             {% endfor %}
@@ -47,7 +68,8 @@
                     method: "POST",
                     body: JSON.stringify({
                         "description": document.getElementById("input-description").value,
-                        "complete": document.getElementById("checkbox-complete").checked
+                        "complete": document.getElementById("checkbox-complete").checked,
+                        "priorityLevel": document.getElementById('select-priority-level').value
                     }),
                     headers: {
                         "Content-Type": "application/json"
@@ -63,6 +85,8 @@
                     if (jsonResponse.complete){
                         newLiItem.className = "task-complete";
                     }
+                    const liPriorityClass = "priority-" + jsonResponse.priorityLevel;
+                    newLiItem.className += jsonResponse.priorityLevel;
                     document.getElementById("list-todos").appendChild(newLiItem);
                     document.getElementById("error").className = "hidden";
                 })

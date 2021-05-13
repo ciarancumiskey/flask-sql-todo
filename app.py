@@ -16,9 +16,10 @@ class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(), nullable=False)
     complete = db.Column(db.Boolean, default=False)
+    priority_level = db.Column(db.String(), nullable=False, default='low')
 
     def __repr__(self):
-        return f'<Todo #{self.id}: {self.description}>'
+        return f'<Todo #{self.id}: {self.description}, {self.priority_level} priority>'
 
 @app.route('/')
 def index():
@@ -32,12 +33,14 @@ def create_todo():
         #Get the data from the user's POST request
         description = request.get_json()['description']
         todo_complete = request.get_json()['complete']
+        priority_level = request.get_json()['priorityLevel']
         #Use that POSTed data to create a Todo object
-        new_todo = Todo(description=description, complete=bool(todo_complete))
+        new_todo = Todo(description=description, complete=bool(todo_complete), priority_level=priority_level)
         db.session.add(new_todo)
         db.session.commit()
         todo_body['description'] = new_todo.description
         todo_body['complete'] = new_todo.complete
+        todo_body['priority_level'] = new_todo.priority_level
     except:
         error = True
         db.session.rollback()
