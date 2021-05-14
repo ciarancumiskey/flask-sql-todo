@@ -77,58 +77,8 @@
             {% endfor %}
         </ul>
         <script>
-            const checkboxes = document.querySelectorAll('.checkbox-complete');
-            //Loop through each Todo's "completed" checkbox and define their onchange behaviour
-            for (let i = 0; i < checkboxes.length; i++) {
-                const checkbox = checkboxes[i];
-                checkbox.onchange = function(e){
-                    console.log('Checkbox toggled', e);
-                    const newCompleted = e.target.checked;
-                    //Get the data-id of the checkbox, which will correspond to the ID of that Todo in the database
-                    fetch('/todos/' + e.target.dataset['id'] + '/set-completed', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            'completed': newCompleted
-                        }),
-                        headers: {
-                            "Content-Type": "application/json"
-                        }
-                    })
-                    .then(function(){
-                        document.getElementById("error").className = "hidden";
-                        //Update the corresponding list item's own list of classes
-                        if(newCompleted){
-                            e.target.parentElement.className += " task-complete";
-                        } else {
-                            //Remove "task-complete" from the parent list item's list of class names
-                            e.target.parentElement.className = e.target.parentElement.className.replace("task-complete", "");
-                            
-                        }
-                    })
-                    .catch(function(error){
-                        document.getElementById("error").className = "";
-                        console.log(error);
-                    })
-                }
-            }
-            const deleteButtons = document.querySelectorAll('.btn-delete');
-            //Loop through each Todo's "completed" checkbox and define their onchange behaviour
-            for (let i = 0; i < deleteButtons.length; i++) {
-                const btnDelete = deleteButtons[i];
-                btnDelete.onclick = function(e){
-                    console.log('Delete button clicked', e);
-                    //const newCompleted = e.target.checked;
-                    //Get the data-id of the checkbox, which will correspond to the ID of that Todo in the database
-                    fetch('/todos/' + e.target.dataset['id'], {
-                        method: 'DELETE',
-                    })
-                    .then(function(){
-                        //Remove the corresponding list item from the list
-                        const item = e.target.parentElement;
-                        item.remove();
-                    })
-                }
-            }
+            addCheckboxes();
+            addDeleteButtons();
             document.getElementById("form-create-todo").onsubmit = function(e){
                 //Prevent the page from refreshing
                 e.preventDefault();
@@ -166,18 +116,77 @@
                     newDeleteBtn.setAttribute("data-id", jsonResponse.id);
                     newDeleteBtn.innerHTML = '&cross;';
                     newLiItem.appendChild(newDeleteBtn);
-                    
+
                     newLiItem.className = "priority-" + jsonResponse.priority_level;
                     //Add the new list item to the list, then hide the error message
                     console.log("New list item", newLiItem);
                     document.getElementById("list-todos").appendChild(newLiItem);
                     document.getElementById("error").className = "hidden";
-                    //checkboxes = document.querySelectorAll('.checkbox-complete');
+                    //Refresh the checkboxes and delete buttons so they work for newly-added Todos
+                    addCheckboxes();
+                    addDeleteButtons();
                 })
                 .catch(function(error){
                     document.getElementById("error").className = "";
                     console.log(error);
                 })
+            }
+            
+            function addCheckboxes(){
+                const checkboxes = document.querySelectorAll('.checkbox-complete');
+            //Loop through each Todo's "completed" checkbox and define their onchange behaviour
+                for (let i = 0; i < checkboxes.length; i++) {
+                    const checkbox = checkboxes[i];
+                    checkbox.onchange = function(e){
+                        console.log('Checkbox toggled', e);
+                        const newCompleted = e.target.checked;
+                        //Get the data-id of the checkbox, which will correspond to the ID of that Todo in the database
+                        fetch('/todos/' + e.target.dataset['id'] + '/set-completed', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                'completed': newCompleted
+                            }),
+                            headers: {
+                                "Content-Type": "application/json"
+                            }
+                        })
+                        .then(function(){
+                            document.getElementById("error").className = "hidden";
+                            //Update the corresponding list item's own list of classes
+                            if(newCompleted){
+                                e.target.parentElement.className += " task-complete";
+                            } else {
+                                //Remove "task-complete" from the parent list item's list of class names
+                                e.target.parentElement.className = e.target.parentElement.className.replace("task-complete", "");
+                                
+                            }
+                        })
+                        .catch(function(error){
+                            document.getElementById("error").className = "";
+                            console.log(error);
+                        })
+                    }
+                }
+            }
+            function addDeleteButtons(){
+                const deleteButtons = document.querySelectorAll('.btn-delete');
+                //Loop through each Todo's "completed" checkbox and define their onchange behaviour
+                for (let i = 0; i < deleteButtons.length; i++) {
+                    const btnDelete = deleteButtons[i];
+                    btnDelete.onclick = function(e){
+                        console.log('Delete button clicked', e);
+                        //const newCompleted = e.target.checked;
+                        //Get the data-id of the checkbox, which will correspond to the ID of that Todo in the database
+                        fetch('/todos/' + e.target.dataset['id'], {
+                            method: 'DELETE',
+                        })
+                        .then(function(){
+                            //Remove the corresponding list item from the list
+                            const item = e.target.parentElement;
+                            item.remove();
+                        })
+                    }
+                }
             }
         </script>
     </body>
