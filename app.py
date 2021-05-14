@@ -23,7 +23,7 @@ class Todo(db.Model):
 
 @app.route('/')
 def index():
-    return render_template('index.html', data=Todo.query.all())
+    return render_template('index.html', data=Todo.query.order_by('id').all())
 
 @app.route('/todos/create', methods=['POST'])
 def create_todo():
@@ -40,6 +40,7 @@ def create_todo():
         todo_body['description'] = new_todo.description
         todo_body['complete'] = new_todo.complete
         todo_body['priority_level'] = new_todo.priority_level
+        todo_body['id'] = new_todo.id
     except:
         error = True
         db.session.rollback()

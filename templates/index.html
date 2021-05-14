@@ -2,6 +2,15 @@
     <head>
         <title>Todo App</title>
         <style>
+            li {
+                clear: both;
+            }
+            ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                width: 300px;
+            }
             #error {
                 color: red;
             }
@@ -10,6 +19,14 @@
             }
             .task-complete {
                 text-decoration: line-through;
+            }
+            .btn-delete {
+                -webkit-appearance: none;
+                background-color: red;
+                color: white;
+                float: right;
+                cursor: pointer;
+                font-size: 20px;
             }
             .priority-urgent {
                 background-color: red;
@@ -24,11 +41,6 @@
             .priority-low {
                 background-color: green;
                 color: white;
-            }
-            ul {
-                list-style: none;
-                padding: 0;
-                margin: 0;
             }
         </style>
     </head>
@@ -47,7 +59,6 @@
                     <option value="low">Low</option>
                 </select>
             </div>
-        
             <div>
                 <input type="submit" id="submit" value="Create new Todo" />
             </div>
@@ -61,16 +72,19 @@
                 <input type="checkbox" data-id="{{ d.id }}" class="checkbox-complete" 
                     {% if d.complete %} checked {% endif %} />
                 {{ d.description }}
+                <button class="btn-delete" data-id="{{ d.id }}">&cross;</button>
             </li>
             {% endfor %}
         </ul>
         <script>
             const checkboxes = document.querySelectorAll('.checkbox-complete');
+            //Loop through each Todo's "completed" checkbox and define their onchange behaviour
             for (let i = 0; i < checkboxes.length; i++) {
                 const checkbox = checkboxes[i];
                 checkbox.onchange = function(e){
                     console.log('Checkbox toggled', e);
                     const newCompleted = e.target.checked;
+                    //Get the data-id of the checkbox, which will correspond to the ID of that Todo in the database
                     fetch('/todos/' + e.target.dataset['id'] + '/set-completed', {
                         method: 'POST',
                         body: JSON.stringify({
@@ -111,17 +125,26 @@
                     }
                 })
                 .then(function(response){
+                    console.log("Create new Todo response: ", response);
                     return response.json();
                 })
                 .then(function(jsonResponse){
+                    //TODO: New list items' checkboxes don't have a data id.
                     console.log(jsonResponse);
+                    //Create a new list item for the newly-created Todo
                     const newLiItem = document.createElement("li");
-                    newLiItem.innerHTML = '<input type="checkbox" class="checkbox-complete"/> ';
+                    const newInputItem = document.createElement("input");
+                    newInputItem.className = "checkbox-complete";
+                    newInputItem.type = "checkbox";
+                    newInputItem.setAttribute("data-id", jsonResponse["id"]);
+                    newLiItem.appendChild(newInputItem);
                     newLiItem.innerHTML += jsonResponse["description"];
                     newLiItem.className = "priority-" + jsonResponse["priority_level"];
-                    console.log(newLiItem.className);
+                    //Add the new list item to the list, then hide the error message
+                    console.log("New list item", newLiItem);
                     document.getElementById("list-todos").appendChild(newLiItem);
                     document.getElementById("error").className = "hidden";
+                    //checkboxes = document.querySelectorAll('.checkbox-complete');
                 })
                 .catch(function(error){
                     document.getElementById("error").className = "";
