@@ -111,6 +111,24 @@
                     })
                 }
             }
+            const deleteButtons = document.querySelectorAll('.btn-delete');
+            //Loop through each Todo's "completed" checkbox and define their onchange behaviour
+            for (let i = 0; i < deleteButtons.length; i++) {
+                const btnDelete = deleteButtons[i];
+                btnDelete.onclick = function(e){
+                    console.log('Delete button clicked', e);
+                    //const newCompleted = e.target.checked;
+                    //Get the data-id of the checkbox, which will correspond to the ID of that Todo in the database
+                    fetch('/todos/' + e.target.dataset['id'], {
+                        method: 'DELETE',
+                    })
+                    .then(function(){
+                        //Remove the corresponding list item from the list
+                        const item = e.target.parentElement;
+                        item.remove();
+                    })
+                }
+            }
             document.getElementById("form-create-todo").onsubmit = function(e){
                 //Prevent the page from refreshing
                 e.preventDefault();
@@ -133,13 +151,23 @@
                     console.log(jsonResponse);
                     //Create a new list item for the newly-created Todo
                     const newLiItem = document.createElement("li");
-                    const newInputItem = document.createElement("input");
-                    newInputItem.className = "checkbox-complete";
-                    newInputItem.type = "checkbox";
-                    newInputItem.setAttribute("data-id", jsonResponse["id"]);
-                    newLiItem.appendChild(newInputItem);
-                    newLiItem.innerHTML += jsonResponse["description"];
-                    newLiItem.className = "priority-" + jsonResponse["priority_level"];
+                    const newCheckbox = document.createElement("input");
+                    //Create a checkbox for it too
+                    newCheckbox.className = "checkbox-complete";
+                    newCheckbox.type = "checkbox";
+                    newCheckbox.setAttribute("data-id", jsonResponse.id);
+                    newLiItem.appendChild(newCheckbox);
+                    //Add the Todo description as the list item's content
+                    const newLiText = document.createTextNode(' ' + jsonResponse.description);
+                    newLiItem.appendChild(newLiText);
+                    //Create the delete button
+                    const newDeleteBtn = document.createElement('button');
+                    newDeleteBtn.className = "btn-delete";
+                    newDeleteBtn.setAttribute("data-id", jsonResponse.id);
+                    newDeleteBtn.innerHTML = '&cross;';
+                    newLiItem.appendChild(newDeleteBtn);
+                    
+                    newLiItem.className = "priority-" + jsonResponse.priority_level;
                     //Add the new list item to the list, then hide the error message
                     console.log("New list item", newLiItem);
                     document.getElementById("list-todos").appendChild(newLiItem);
