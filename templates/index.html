@@ -25,6 +25,11 @@
                 background-color: green;
                 color: white;
             }
+            ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
         </style>
     </head>
     <body>
@@ -42,10 +47,7 @@
                     <option value="low">Low</option>
                 </select>
             </div>
-            <div>
-                <label for="complete">Task complete</label>
-                <input type="checkbox" name="complete" id="checkbox-complete">
-            </div>
+        
             <div>
                 <input type="submit" id="submit" value="Create new Todo" />
             </div>
@@ -56,11 +58,45 @@
             {% for d in data %}
             <!--The double curly brackets are Jinja print statements-->
             <li class="priority-{{ d.priority_level }}{% if d.complete %} task-complete{% endif %}">
+                <input type="checkbox" data-id="{{ d.id }}" class="checkbox-complete" 
+                    {% if d.complete %} checked {% endif %} />
                 {{ d.description }}
             </li>
             {% endfor %}
         </ul>
         <script>
+            const checkboxes = document.querySelectorAll('.checkbox-complete');
+            for (let i = 0; i < checkboxes.length; i++) {
+                const checkbox = checkboxes[i];
+                checkbox.onchange = function(e){
+                    console.log('Checkbox toggled', e);
+                    const newCompleted = e.target.checked;
+                    fetch('/todos/' + e.target.dataset['id'] + '/set-completed', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            'completed': newCompleted
+                        }),
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+                    })
+                    .then(function(){
+                        document.getElementById("error").className = "hidden";
+                        //Update the corresponding list item's own list of classes
+                        if(newCompleted){
+                            e.target.parentElement.className += " task-complete";
+                        } else {
+                            //Remove "task-complete" from the parent list item's list of class names
+                            e.target.parentElement.className = e.target.parentElement.className.replace("task-complete", "");
+                            
+                        }
+                    })
+                    .catch(function(error){
+                        document.getElementById("error").className = "";
+                        console.log(error);
+                    })
+                }
+            }
             document.getElementById("form-create-todo").onsubmit = function(e){
                 //Prevent the page from refreshing
                 e.preventDefault();
@@ -68,8 +104,7 @@
                     method: "POST",
                     body: JSON.stringify({
                         "description": document.getElementById("input-description").value,
-                        "complete": document.getElementById("checkbox-complete").checked,
-                        "priorityLevel": document.getElementById('select-priority-level').value
+                        "priorityLevel": document.getElementById("select-priority-level").value
                     }),
                     headers: {
                         "Content-Type": "application/json"
@@ -81,11 +116,9 @@
                 .then(function(jsonResponse){
                     console.log(jsonResponse);
                     const newLiItem = document.createElement("li");
-                    newLiItem.innerHTML = jsonResponse['description'];
-                    if (jsonResponse.complete){
-                        newLiItem.className = "task-complete";
-                    }
-                    newLiItem.className += " priority-" + jsonResponse['priority_level'];
+                    newLiItem.innerHTML = '<input type="checkbox" class="checkbox-complete"/> ';
+                    newLiItem.innerHTML += jsonResponse["description"];
+                    newLiItem.className = "priority-" + jsonResponse["priority_level"];
                     console.log(newLiItem.className);
                     document.getElementById("list-todos").appendChild(newLiItem);
                     document.getElementById("error").className = "hidden";

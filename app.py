@@ -32,10 +32,9 @@ def create_todo():
     try:
         #Get the data from the user's POST request
         description = request.get_json()['description']
-        todo_complete = request.get_json()['complete']
         priority_level = request.get_json()['priorityLevel']
         #Use that POSTed data to create a Todo object
-        new_todo = Todo(description=description, complete=bool(todo_complete), priority_level=priority_level)
+        new_todo = Todo(description=description, complete=False, priority_level=priority_level)
         db.session.add(new_todo)
         db.session.commit()
         todo_body['description'] = new_todo.description
@@ -52,5 +51,16 @@ def create_todo():
     if not error:
         #Instead of returning the user to the index page, return the JSON data to the client
         return jsonify(todo_body)
-    
-    
+
+#As todo_id is specified in the route, it's available as an argument for the method
+@app.route('/todos/<todo_id>/set-completed', methods=['POST'])
+def set_complete_todo(todo_id):
+    try:
+        updated_todo = Todo.query.get(todo_id)
+        updated_todo.complete = request.get_json()['completed']
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
+    return redirect(url_for('index'))
