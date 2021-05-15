@@ -20,7 +20,7 @@
             .task-complete {
                 text-decoration: line-through;
             }
-            .btn-delete {
+            .btn-delete, .btn-delete-list {
                 -webkit-appearance: none;
                 background-color: red;
                 color: white;
@@ -45,6 +45,26 @@
         </style>
     </head>
     <body>
+        <div>
+            <form id="form-create-list">
+                <div>
+                    <label for="name">Name</label>
+                    <input type="text" name="name" id="input-list-name">
+                </div>
+                <div>
+                    <input type="submit" id="new-list-submit" value="Create new list"/>
+                </div>
+            </form>
+            <ul id="lists">
+                {% for list in lists %}
+                <li>
+                    <input type="checkbox" data-id="{{ list.id }}" class="checkbox-list-complete"/>
+                    {{ list.name }}
+                    <button class="btn-delete-list" data-id="{{ list.id }}">Delete list</button>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
         <form id="form-create-todo">
             <div>
                 <label for="description">Description</label>
@@ -66,13 +86,13 @@
         <div id="error" class="hidden">An error has occurred.</div>
         <ul id="list-todos">
             <!--Load the data input from render_template-->
-            {% for d in data %}
+            {% for todo in todos %}
             <!--The double curly brackets are Jinja print statements-->
-            <li class="priority-{{ d.priority_level }}{% if d.complete %} task-complete{% endif %}">
-                <input type="checkbox" data-id="{{ d.id }}" class="checkbox-complete" 
-                    {% if d.complete %} checked {% endif %} />
-                {{ d.description }}
-                <button class="btn-delete" data-id="{{ d.id }}">&cross;</button>
+            <li class="priority-{{ todo.priority_level }}{% if todo.complete %} task-complete{% endif %}">
+                <input type="checkbox" data-id="{{ todo.id }}" class="checkbox-complete" 
+                    {% if todo.complete %} checked {% endif %} />
+                {{ todo.description }}
+                <button class="btn-delete" data-id="{{ todo.id }}">&cross;</button>
             </li>
             {% endfor %}
         </ul>
