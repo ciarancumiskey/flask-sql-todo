@@ -10,14 +10,15 @@ db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 
-#Create the model, then instantiate it
+#Create the models, then instantiate them
 class Todo(db.Model):
     __tablename__ = 'todos'
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(), nullable=False)
     complete = db.Column(db.Boolean, default=False)
     priority_level = db.Column(db.String(), nullable=False, default='low')
-    list_id = db.Column(db.Integer, db.ForeignKey('todolists.id'), nullable=False)
+    list_id = db.Column(db.Integer, db.ForeignKey('todolists.id'), nullable=False, 
+    default=1)
 
     def __repr__(self):
         return f'<Todo #{self.id}: {self.description}, {self.priority_level} priority>'
@@ -57,6 +58,7 @@ def create_todo():
         todo_body['complete'] = new_todo.complete
         todo_body['priority_level'] = new_todo.priority_level
         todo_body['id'] = new_todo.id
+        todo_body['list_id'] = new_todo.list_id
     except:
         error = True
         db.session.rollback()
