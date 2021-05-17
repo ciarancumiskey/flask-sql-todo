@@ -52,8 +52,9 @@ def create_todo():
         #Get the data from the user's POST request
         description = request.get_json()['description']
         priority_level = request.get_json()['priorityLevel']
+        list_id = request.get_json()['listId']
         #Use that POSTed data to create a Todo object
-        new_todo = Todo(description=description, complete=False, priority_level=priority_level)
+        new_todo = Todo(description=description, complete=False, priority_level=priority_level, list_id=list_id)
         db.session.add(new_todo)
         db.session.commit()
         todo_body['description'] = new_todo.description
@@ -98,14 +99,62 @@ def delete_todo(todo_id):
         db.session.close()
     return jsonify({'success': True})
 
-# @app.route('/lists/create', methods=['POST'])
-# def create_todo_list():
-#     error = False
-#     list_body = {}
-#     try:
+@app.route('/lists/create', methods=['POST'])
+def create_todo_list():
+    error = False
+    list_body = {}
+    try:
+        new_todolist = TodoList(name=request.get_json()['name'])
+        db.session.add(new_todolist)
+        db.session.commit()
+        list_body['id'] = new_todolist.id
+        list_body['name'] = new_todolist.name
+    except:
+        db.session.rollback()
+        error = True
+    finally:
+        db.session.close()
+    if error:
+        abort(500)
+    else:
+        return jsonify(list_body)
 
-#     except:
+@app.route('/lists/<list_id>/delete', methods=['DELETE'])
+def delete_list(list_id):
+    error = False
+    try:
+        doomed_list = TodoList.query.get(list_id)
+        #Loop through all of the deleted list's Todos and delete them
+        for todo in doomed_list.todos:
+            db.session.delete(todo)
+        db.session.delete(doomed_list)
+        db.session.commit()
+    except:
+        db.session.rollback()
+        error = True
+    finally:
+        db.session.close()
+    if error:
+        abort(500)
+    else:
+        return jsonify({'success': True})
 
-#     finally:
-    
-#     return
+
+@app.route('/lists/<list_id>/set-completed', methods=['POST'])
+def set_list_complete(list_id):
+    error = False
+    try:
+        list = TodoList.query.get(list_id)
+        #Loop through all of this list's Todos and update them
+        for todo in list.todos:
+            todo.complete = True
+        db.session.commit()
+    except:
+        db.session.rollback()
+        error = True
+    finally:
+        db.session.close()
+    if error:
+        abort(500)
+    else:
+        return '', 200
