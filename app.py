@@ -30,7 +30,7 @@ class TodoList(db.Model):
     todos = db.relationship('Todo', backref='list', lazy=True)
 
     def __repr__(self):
-        return f'<List #{self.id}: {self.name}>'
+        return f'<List #{self.id}: {self.name}, todos: {self.todos}>'
 
 @app.route('/')
 def index():
@@ -147,6 +147,7 @@ def set_list_complete(list_id):
         list = TodoList.query.get(list_id)
         #Loop through all of this list's Todos and update them
         for todo in list.todos:
+            #The checkbox for each list of Todos will only send requests when checked
             todo.complete = True
         db.session.commit()
     except:
@@ -158,3 +159,6 @@ def set_list_complete(list_id):
         abort(500)
     else:
         return '', 200
+
+if __name__ == '__main__':
+    app.run(debug=True)

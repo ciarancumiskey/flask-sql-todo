@@ -21,7 +21,7 @@
                 <li>
                     <input type="checkbox" data-id="{{ list.id }}" class="checkbox-list-complete"/>
                         <a href="/lists/{{list.id}}">{{ list.name }}</a>
-                    <button class="btn-delete-list" data-id="{{ list.id }}">Delete list</button>
+                    <button class="btn-delete-list" data-id="{{ list.id }}">&#x1F5D1;</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -53,7 +53,7 @@
                 <!--Load the data input from render_template-->
                 {% for todo in todos %}
                 <!--The double curly brackets are Jinja print statements-->
-                <li class="priority-{{ todo.priority_level }}{% if todo.complete %} task-complete{% endif %}">
+                <li class="item-todo priority-{{ todo.priority_level }}{% if todo.complete %} task-complete{% endif %}">
                     <input type="checkbox" data-id="{{ todo.id }}" class="checkbox-complete" 
                         {% if todo.complete %} checked {% endif %} />
                     {{ todo.description }}
@@ -64,7 +64,12 @@
         </div>
         <script>
             addCheckboxes();
+            addListCheckboxes();
             addDeleteButtons();
+            addListDeleteButtons();
+            /**
+             * This handles the new list submission form.
+             */
             document.getElementById("form-create-list").onsubmit = function(e){
                 e.preventDefault();
                 fetch("/lists/create", {
@@ -87,9 +92,11 @@
                     newListCheckbox.type = "checkbox";
                     newListCheckbox.setAttribute("data-id", jsonResponse.id);
                     newListLi.appendChild(newListCheckbox);
+                    //Add a gap between the checkbox and the link
+                    newListLi.appendChild(document.createTextNode(" "));
                     //Give the list element a link
                     const newListLink = document.createElement("a");
-                    const newListText = document.createTextNode(" " + jsonResponse.name);
+                    const newListText = document.createTextNode(jsonResponse.name);
                     newListLink.appendChild(newListText);
                     newListLink.href = "/lists/" + jsonResponse.id;
                     newListLi.appendChild(newListLink);
@@ -102,7 +109,9 @@
                     //Add the new list element to the list of lists
                     document.getElementById("list-todolists").appendChild(newListLi);
                     addCheckboxes();
+                    addListCheckboxes();
                     addDeleteButtons();
+                    addListDeleteButtons();
                 })
             }
             document.getElementById("form-create-todo").onsubmit = function(e){
@@ -150,7 +159,9 @@
                     document.getElementById("error").className = "hidden";
                     //Refresh the checkboxes and delete buttons so they work for newly-added Todos
                     addCheckboxes();
+                    addListCheckboxes();
                     addDeleteButtons();
+                    addListDeleteButtons();
                 })
                 .catch(function(error){
                     document.getElementById("error").className = "";
@@ -160,7 +171,7 @@
             
             function addCheckboxes(){
                 const checkboxes = document.querySelectorAll('.checkbox-complete');
-            //Loop through each Todo's "completed" checkbox and define their onchange behaviour
+                //Loop through each Todo's "completed" checkbox and define their onchange behaviour
                 for (let i = 0; i < checkboxes.length; i++) {
                     const checkbox = checkboxes[i];
                     checkbox.onchange = function(e){
@@ -194,6 +205,49 @@
                     }
                 }
             }
+
+            function addListCheckboxes(){
+                const listCheckboxes = document.querySelectorAll('.checkbox-list-complete');
+                for(let i = 0; i < listCheckboxes.length; i++){
+                    const listCheckbox = listCheckboxes[i];
+                    listCheckbox.onchange = function(e){
+                        if(e.target.checked){
+                            var checkConfirm = confirm("Are you sure you want to mark all Todos in this list as complete?");
+                            if(checkConfirm){
+                                const listId = e.target.dataset.id;
+                                fetch('/lists/' + listId + '/set-completed', {
+                                    method: 'POST',
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    }
+                                })
+                                .then(function(){
+                                    //Hide the error message
+                                    document.getElementById('error').className = 'hidden';
+                                    //Find all of the Todos' checkboxes
+                                    const todoCheckboxes = document.querySelectorAll('.checkbox-complete');
+                                    const todoListRows = document.querySelectorAll('.item-todo');
+                                    //Loop through the Todo checkboxes and check them
+                                    for(let j = 0; j < todoCheckboxes.length; j++){
+                                        todoCheckboxes[j].checked = true;
+                                        //Check if this Todo is already complete
+                                        if(!todoListRows[j].className.includes("task-complete")){
+                                            //If not, add "task-complete" to its list of classes
+                                            todoListRows[j].className += " task-complete";
+                                        }
+                                    }
+                                })
+                                .catch(function(e){
+                                    document.getElementById("error").className = "";
+                                    console.log(error);
+                                })
+                            } else {
+                                e.target.checked = false;
+                            }
+                        }
+                    }
+                }
+            }
             function addDeleteButtons(){
                 const deleteButtons = document.querySelectorAll('.btn-delete');
                 //Loop through each Todo's "completed" checkbox and define their onchange behaviour
@@ -211,6 +265,31 @@
                             const item = e.target.parentElement;
                             item.remove();
                         })
+                    }
+                }
+            }
+            function addListDeleteButtons(){
+                const listDeleteBtns = document.querySelectorAll('.btn-delete-list');
+                for(let i = 0; i < listDeleteBtns.length; i++){
+                    const btnListDelete = listDeleteBtns[i];
+                    btnListDelete.onclick = function(e){
+                        var deleteConfirm = confirm("Are you sure you want to delete this list and all of its Todos?");
+                        if(deleteConfirm){
+                            const listToBeDeletedId = e.target.dataset.id;
+                            fetch('/lists/' + listToBeDeletedId + '/delete', {
+                                method: 'DELETE'
+                            })
+                            .then(function() {
+                                const item = e.target.parentElement;
+                                item.remove();
+                                document.getElementById("error").className = "hidden";
+                                window.location.reload(true);
+                            })
+                            .catch(function(error) {
+                                console.log(error);
+                                document.getElementById("error").className = "";
+                            })
+                        }
                     }
                 }
             }
