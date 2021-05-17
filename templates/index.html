@@ -1,65 +1,22 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Todo App</title>
-        <style>
-            li {
-                clear: both;
-            }
-            ul {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-                width: 300px;
-            }
-            #error {
-                color: red;
-            }
-            .hidden {
-                display: none;
-            }
-            .task-complete {
-                text-decoration: line-through;
-            }
-            .btn-delete, .btn-delete-list {
-                -webkit-appearance: none;
-                background-color: red;
-                color: white;
-                float: right;
-                cursor: pointer;
-                font-size: 20px;
-            }
-            .priority-urgent {
-                background-color: red;
-                color: white;
-            }
-            .priority-high {
-                background-color: orange;
-            }
-            .priority-medium {
-                background-color: yellow;
-            }
-            .priority-low {
-                background-color: green;
-                color: white;
-            }
-            .lists-wrapper, .todos-wrapper {
-                display: inline-block;
-                vertical-align: top;
-            }
-        </style>
+        <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/index.css') }}">
     </head>
     <body>
         <div class="lists-wrapper">
-            <form id="form-create-list">
+            <h4>Todo Lists</h4>
+            <form action="/lists/create" method="POST" id="form-create-list">
                 <div>
                     <label for="name">Name</label>
-                    <input type="text" name="name" id="input-list-name">
+                    <input type="text" name="name" id="input-list-name" placeholder="New list name" data-id="{{ active_list.id}}"/>
                 </div>
                 <div>
                     <input type="submit" id="new-list-submit" value="Create new list"/>
                 </div>
             </form>
-            <ul id="lists">
+            <ul id="list-todolists">
                 {% for list in lists %}
                 <li>
                     <input type="checkbox" data-id="{{ list.id }}" class="checkbox-list-complete"/>
@@ -72,9 +29,11 @@
         <div class="todos-wrapper">
             <h4>{{ active_list.name }}</h4>
             <form id="form-create-todo">
+                <!--This is just a quick and dirty way of passing the active list's ID into Javascript for posting to the DB-->
+                <input id="list_id" type="hidden" value="{{ active_list.id }}">
                 <div>
                     <label for="description">Description</label>
-                    <input type="text" name="description" id="input-description">
+                    <input type="text" name="description" id="input-description" placeholder="Task"/>
                 </div>
                 <div>
                     <label for="priority-level">Priority level</label>
@@ -106,6 +65,46 @@
         <script>
             addCheckboxes();
             addDeleteButtons();
+            document.getElementById("form-create-list").onsubmit = function(e){
+                e.preventDefault();
+                fetch("/lists/create", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        "name": document.getElementById("input-list-name").value
+                    }),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(function(response){
+                    return response.json();
+                })
+                .then(function(jsonResponse){
+                    const newListLi = document.createElement("li");
+                    //Create completion checkbox for the new list
+                    const newListCheckbox = document.createElement("input");
+                    newListCheckbox.className = "checkbox-list-complete";
+                    newListCheckbox.type = "checkbox";
+                    newListCheckbox.setAttribute("data-id", jsonResponse.id);
+                    newListLi.appendChild(newListCheckbox);
+                    //Give the list element a link
+                    const newListLink = document.createElement("a");
+                    const newListText = document.createTextNode(" " + jsonResponse.name);
+                    newListLink.appendChild(newListText);
+                    newListLink.href = "/lists/" + jsonResponse.id;
+                    newListLi.appendChild(newListLink);
+                    //Create deletion button for the new list
+                    const newListDeleteBtn = document.createElement('button');
+                    newListDeleteBtn.className = "btn-delete-list";
+                    newListDeleteBtn.setAttribute("data-id", jsonResponse.id);
+                    newListDeleteBtn.innerHTML = "Delete list";
+                    newListLi.appendChild(newListDeleteBtn);
+                    //Add the new list element to the list of lists
+                    document.getElementById("list-todolists").appendChild(newListLi);
+                    addCheckboxes();
+                    addDeleteButtons();
+                })
+            }
             document.getElementById("form-create-todo").onsubmit = function(e){
                 //Prevent the page from refreshing
                 e.preventDefault();
@@ -113,7 +112,8 @@
                     method: "POST",
                     body: JSON.stringify({
                         "description": document.getElementById("input-description").value,
-                        "priorityLevel": document.getElementById("select-priority-level").value
+                        "priorityLevel": document.getElementById("select-priority-level").value,
+                        "listId": document.getElementById("list_id").value
                     }),
                     headers: {
                         "Content-Type": "application/json"
@@ -124,7 +124,6 @@
                     return response.json();
                 })
                 .then(function(jsonResponse){
-                    //TODO: New list items' checkboxes don't have a data id.
                     console.log(jsonResponse);
                     //Create a new list item for the newly-created Todo
                     const newLiItem = document.createElement("li");
