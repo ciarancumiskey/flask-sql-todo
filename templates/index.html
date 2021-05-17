@@ -104,7 +104,7 @@
                     const newListDeleteBtn = document.createElement('button');
                     newListDeleteBtn.className = "btn-delete-list";
                     newListDeleteBtn.setAttribute("data-id", jsonResponse.id);
-                    newListDeleteBtn.innerHTML = "Delete list";
+                    newListDeleteBtn.innerHTML = "&#x1F5D1;";
                     newListLi.appendChild(newListDeleteBtn);
                     //Add the new list element to the list of lists
                     document.getElementById("list-todolists").appendChild(newListLi);
@@ -157,6 +157,7 @@
                     console.log("New list item", newLiItem);
                     document.getElementById("list-todos").appendChild(newLiItem);
                     document.getElementById("error").className = "hidden";
+                    window.location.reload(true);
                     //Refresh the checkboxes and delete buttons so they work for newly-added Todos
                     addCheckboxes();
                     addListCheckboxes();
@@ -194,8 +195,7 @@
                                 e.target.parentElement.className += " task-complete";
                             } else {
                                 //Remove "task-complete" from the parent list item's list of class names
-                                e.target.parentElement.className = e.target.parentElement.className.replace("task-complete", "");
-                                
+                                e.target.parentElement.className = e.target.parentElement.className.replace(" task-complete", "");
                             }
                         })
                         .catch(function(error){
