@@ -18,7 +18,7 @@
             </form>
             <ul id="list-todolists">
                 {% for list in lists %}
-                <li>
+                <li {% if list.id == active_list.id %}class="active_list"{% endif %}>
                     <input type="checkbox" data-id="{{ list.id }}" class="checkbox-list-complete"/>
                         <a href="/lists/{{list.id}}">{{ list.name }}</a>
                     <button class="btn-delete-list" data-id="{{ list.id }}">&#x1F5D1;</button>

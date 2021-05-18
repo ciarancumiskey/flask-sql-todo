@@ -7,8 +7,26 @@ ul {
     margin: 0;
     width: 300px;
 }
-#error {
-    color: red;
+form {
+    margin-bottom: 10px;
+}
+.lists-wrapper, .todos-wrapper {
+    display: inline-block;
+    vertical-align: top;
+    padding: 10px;
+}
+.lists-wrapper ul {
+    background-color: #757575;
+    color: white;
+}
+.active-list {
+    background-color: #e0e0e0;
+}
+.active-list a {
+    text-decoration: none;
+}
+li :hover {
+    background-color: #ffff00;
 }
 .hidden {
     display: none;
@@ -18,27 +36,27 @@ ul {
 }
 .btn-delete, .btn-delete-list {
     -webkit-appearance: none;
-    background-color: red;
+    background-color: #f44336;
     color: white;
     float: right;
     cursor: pointer;
-    font-size: 20px;
 }
 .priority-urgent {
-    background-color: red;
+    background-color: #f44336;
     color: white;
 }
 .priority-high {
-    background-color: orange;
+    background-color: #ffc107;
 }
 .priority-medium {
-    background-color: yellow;
+    background-color: #ffeb3b;
 }
 .priority-low {
-    background-color: green;
-    color: white;
+    background-color: #4caf50;
 }
-.lists-wrapper, .todos-wrapper {
-    display: inline-block;
-    vertical-align: top;
+#error {
+    color: #f44336;
+}
+#input-description, #select-priority-level, #input-list-name {
+    width: 100%;
 }
